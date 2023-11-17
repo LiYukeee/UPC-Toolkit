@@ -38,6 +38,7 @@ def system_proxy(open_or_close, host='127.0.0.1', port=7890):
 #     try:
 #         toast = ToastNotifier()
 #         toast.show_toast(title=title, msg=msg,
+#                          icon_path=icon_path,
 #                          duration=duration, threaded=threaded)
 #     except:
 #         a = 1
