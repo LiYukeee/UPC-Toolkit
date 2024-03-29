@@ -6,7 +6,7 @@
 因此需要拔插网线以获得最优的体验
 为将网络认证操作自动化，本脚本应运而生
 """
-import winreg
+
 from time import sleep
 from requests import post
 from win11toast import toast
@@ -14,54 +14,54 @@ import time
 import json
 import psutil
 
-
-def checkProxy():
-    """
-    检测当前系统代理状态
-    :return: True or False
-    """
-    try:
-        internet_settings = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
-                                           r'Software\Microsoft\Windows\CurrentVersion\Internet Settings')
-        proxy_enable = winreg.QueryValueEx(internet_settings, 'ProxyEnable')[0]
-        winreg.CloseKey(internet_settings)
-
-        if proxy_enable == 1:
-            return True
-        else:
-            return False
-    except Exception as e:
-        print("无法读取代理配置信息:", e)
-        return False
-
-
-def systemProxy(open_or_close, host='127.0.0.1', port=7890):
-    """
-    修改系统代理函数
-    :param open_or_close: 是否开启 bool
-    :param host: IP
-    :param port: 端口
-    :return:
-    """
-    proxy = f"{host}:{port}"
-    root = winreg.HKEY_CURRENT_USER
-    proxy_path = r"Software\Microsoft\Windows\CurrentVersion\Internet Settings"
-    kv_Enable = [
-        (proxy_path, "ProxyEnable", 1, winreg.REG_DWORD),
-        (proxy_path, "ProxyServer", proxy, winreg.REG_SZ),
-    ]
-
-    kv_Disable = [
-        (proxy_path, "ProxyEnable", 0, winreg.REG_DWORD),
-        # (proxy_path, "ProxyServer", proxy, winreg.REG_SZ),
-    ]
-    if open_or_close:
-        kv = kv_Enable
-    else:
-        kv = kv_Disable
-    for keypath, value_name, value, value_type in kv:
-        hKey = winreg.CreateKey(root, keypath)
-        winreg.SetValueEx(hKey, value_name, 0, value_type, value)
+# import winreg
+# def checkProxy():
+#     """
+#     检测当前系统代理状态
+#     :return: True or False
+#     """
+#     try:
+#         internet_settings = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
+#                                            r'Software\Microsoft\Windows\CurrentVersion\Internet Settings')
+#         proxy_enable = winreg.QueryValueEx(internet_settings, 'ProxyEnable')[0]
+#         winreg.CloseKey(internet_settings)
+#
+#         if proxy_enable == 1:
+#             return True
+#         else:
+#             return False
+#     except Exception as e:
+#         print("无法读取代理配置信息:", e)
+#         return False
+#
+#
+# def systemProxy(open_or_close, host='127.0.0.1', port=7890):
+#     """
+#     修改系统代理函数
+#     :param open_or_close: 是否开启 bool
+#     :param host: IP
+#     :param port: 端口
+#     :return:
+#     """
+#     proxy = f"{host}:{port}"
+#     root = winreg.HKEY_CURRENT_USER
+#     proxy_path = r"Software\Microsoft\Windows\CurrentVersion\Internet Settings"
+#     kv_Enable = [
+#         (proxy_path, "ProxyEnable", 1, winreg.REG_DWORD),
+#         (proxy_path, "ProxyServer", proxy, winreg.REG_SZ),
+#     ]
+#
+#     kv_Disable = [
+#         (proxy_path, "ProxyEnable", 0, winreg.REG_DWORD),
+#         # (proxy_path, "ProxyServer", proxy, winreg.REG_SZ),
+#     ]
+#     if open_or_close:
+#         kv = kv_Enable
+#     else:
+#         kv = kv_Disable
+#     for keypath, value_name, value, value_type in kv:
+#         hKey = winreg.CreateKey(root, keypath)
+#         winreg.SetValueEx(hKey, value_name, 0, value_type, value)
 
 
 # def windows10Note(title, msg, icon_path=None, duration=100, threaded=False):
@@ -89,6 +89,79 @@ def windows11Note(title='', msg='', icoPath='C:\\Users\\LiYuke\\OneDrive\\图片
     toast(title, msg, image=image)
 
 
+# def connect(account, password, service):
+#     """
+#     网络认证
+#     :param account:
+#     :param password:
+#     :param service:
+#     :return:
+#     """
+#     currentProxyStatus = checkProxy()
+#     # ---------0---------
+#     # 关闭系统代理
+#     # 在有代理情况下无法完成登录
+#     if checkProxy():
+#         systemProxy(False)
+#     # ---------1---------
+#     # 登录信息
+#     header = {
+#         "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+#         "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
+#         "Origin": "http://lan.upc.edu.cn",
+#         "Host": "lan.upc.edu.cn",
+#     }
+#     serviceChoice = service  # 选择服务：cmcc(中国移动) ctcc(中国电信) cucc(中国联通) default（校园网）
+#     if serviceChoice == "ctcc":
+#         msg = '中国电信'
+#     elif serviceChoice == 'cmcc':
+#         msg = '中国移动'
+#     elif serviceChoice == 'cucc':
+#         msg = '中国联通'
+#     elif serviceChoice == 'default':
+#         msg = '校园网'
+#     else:
+#         msg = '其他'
+#     data = """userId={}&password={}&service={}&queryString=wlanuserip%253D121.249.158.235%2526wlanacname%253D%2526nasip%253D172.22.242.21%2526wlanparameter%253D08-26-ae-33-e4-70%2526url%253Dhttp%253A%252F%252Fwww.google.com%252F%2526userlocation%253Dethtrunk%252F62%253A1667.27&operatorPwd=&operatorUserId=&validcode=&passwordEncrypt=false"""
+#     data = data.format(account, password, serviceChoice)
+#     res = ''
+#     i = 0
+#     tryTimes = 1
+#     icoPath = r"D:/MEDIA/icon/图标.png"
+#     # ---------2---------
+#     # 登录
+#     errnoMessage = ''
+#     success = False
+#     for i in range(tryTimes):
+#         try:
+#             re = post('http://lan.upc.edu.cn/eportal/InterFace.do?method=login',
+#                       headers=header, data=data, proxies=None)
+#             res = re.text
+#             errnoMessage = json.loads(res)['message'].encode('latin1').decode('utf-8')
+#             if 'success' in res:
+#                 success = True
+#                 print("登录成功")
+#                 windows11Note('网络认证成功', msg + "网络已连接\n" + errnoMessage)
+#                 if currentProxyStatus:  # 如果原先系统代理是打开状态
+#                     systemProxy(True)
+#                 return True
+#         except:
+#             a = 1
+#         print("登录第{}次失败".format(i + 1))
+#         sleep(1)
+#
+#     if i == tryTimes - 1 and success == False:
+#         print("登录失败")
+#         windows11Note('登录网络失败', errnoMessage)
+#         if currentProxyStatus:  # 如果原先系统代理是打开状态
+#             systemProxy(True)
+#         return False
+#     # print("程序运行结束")
+#     # 启动其他脚本，在网络登录之后
+#     # import os
+#     # os.system('python "C:\\Users\\Script\\sock获取免费流量.py"')
+
+
 def connect(account, password, service):
     """
     网络认证
@@ -97,12 +170,6 @@ def connect(account, password, service):
     :param service:
     :return:
     """
-    currentProxyStatus = checkProxy()
-    # ---------0---------
-    # 关闭系统代理
-    # 在有代理情况下无法完成登录
-    if checkProxy():
-        systemProxy(False)
     # ---------1---------
     # 登录信息
     header = {
@@ -124,10 +191,8 @@ def connect(account, password, service):
         msg = '其他'
     data = """userId={}&password={}&service={}&queryString=wlanuserip%253D121.249.158.235%2526wlanacname%253D%2526nasip%253D172.22.242.21%2526wlanparameter%253D08-26-ae-33-e4-70%2526url%253Dhttp%253A%252F%252Fwww.google.com%252F%2526userlocation%253Dethtrunk%252F62%253A1667.27&operatorPwd=&operatorUserId=&validcode=&passwordEncrypt=false"""
     data = data.format(account, password, serviceChoice)
-    res = ''
     i = 0
-    tryTimes = 1
-    icoPath = r"D:/MEDIA/icon/图标.png"
+    tryTimes = 2
     # ---------2---------
     # 登录
     errnoMessage = ''
@@ -135,15 +200,13 @@ def connect(account, password, service):
     for i in range(tryTimes):
         try:
             re = post('http://lan.upc.edu.cn/eportal/InterFace.do?method=login',
-                      headers=header, data=data, proxies=None)
+                      headers=header, data=data, proxies={})
             res = re.text
             errnoMessage = json.loads(res)['message'].encode('latin1').decode('utf-8')
             if 'success' in res:
                 success = True
                 print("登录成功")
                 windows11Note('网络认证成功', msg + "网络已连接\n" + errnoMessage)
-                if currentProxyStatus:  # 如果原先系统代理是打开状态
-                    systemProxy(True)
                 return True
         except:
             a = 1
@@ -153,13 +216,7 @@ def connect(account, password, service):
     if i == tryTimes - 1 and success == False:
         print("登录失败")
         windows11Note('登录网络失败', errnoMessage)
-        if currentProxyStatus:  # 如果原先系统代理是打开状态
-            systemProxy(True)
         return False
-    # print("程序运行结束")
-    # 启动其他脚本，在网络登录之后
-    # import os
-    # os.system('python "C:\\Users\\Script\\sock获取免费流量.py"')
 
 
 def main():
